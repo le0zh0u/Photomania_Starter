@@ -57,13 +57,26 @@ class PhotoBrowserCollectionViewController: UICollectionViewController, UICollec
   }
   
   override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+//    let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PhotoBrowserCellIdentifier, forIndexPath: indexPath) as! PhotoBrowserCollectionViewCell
+//    
+//    let imageURL = (photos.objectAtIndex(indexPath.row) as! PhotoInfo).url
+//    
+//    Alamofire.request(.GET, imageURL).response(){
+//        (_, _, data, _) in
+//        let image = UIImage(data: data! as NSData)
+//        cell.imageView.image = image
+//    }
+//    
+//    return cell
     let cell = collectionView.dequeueReusableCellWithReuseIdentifier(PhotoBrowserCellIdentifier, forIndexPath: indexPath) as! PhotoBrowserCollectionViewCell
     
-    let imageURL = (photos.objectAtIndex(indexPath.row) as! PhotoInfo).url
+    let imageURL = (photos.objectAtIndex(indexPath.row) as! PhotoInfo).url  //self.photos[self.photos.startIndex.advancedBy(indexPath.item)].url
+    cell.imageView.image = nil
+    cell.request?.cancel()
     
-    Alamofire.request(.GET, imageURL).response(){
-        (_, _, data, _) in
-        let image = UIImage(data: data! as NSData)
+    cell.request = Alamofire.request(.GET, imageURL).responseImage{
+        response in
+        guard let image = response.result.value where response.result.error == nil else{return}
         cell.imageView.image = image
     }
     
@@ -165,6 +178,7 @@ class PhotoBrowserCollectionViewController: UICollectionViewController, UICollec
 
 class PhotoBrowserCollectionViewCell: UICollectionViewCell {
   let imageView = UIImageView()
+    var request: Alamofire.Request?
   
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)

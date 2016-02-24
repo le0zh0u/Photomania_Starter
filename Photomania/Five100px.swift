@@ -9,6 +9,31 @@
 import UIKit
 import Alamofire
 
+extension Alamofire.Request {
+    class func imageResponseSerializer() -> ResponseSerializer<UIImage?, NSError> {
+        return ResponseSerializer {
+            request, response, data, error in
+            guard error == nil else{ return .Failure(error!)}
+            
+            guard let validData = data else{
+                let failureReason = "数据无法被序列化，因为接受到的数据为空"
+                let error = Error.errorWithCode(.DataSerializationFailed, failureReason: failureReason)
+                
+                return .Failure(error)
+            }
+            
+            let image = UIImage(data: validData, scale: UIScreen.mainScreen().scale)
+            return .Success(image)
+        }
+    }
+    
+    func responseImage(completionHandler: Response<UIImage?, NSError> -> Void) -> Self {
+//        response(serializer: Request.imageResponseSerializer(), completionHandler: { (request, response, image, error) in
+//            completionHandler(request, response, image as? UIImage, error)
+        return response(responseSerializer: Request.imageResponseSerializer(), completionHandler:completionHandler)
+    }
+}
+
 struct Five100px {
     
     enum Router: URLRequestConvertible {
