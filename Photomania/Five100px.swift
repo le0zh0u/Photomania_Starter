@@ -9,7 +9,34 @@
 import UIKit
 import Alamofire
 
+public protocol ResponseObjectSerializable{
+    init?(response:NSHTTPURLResponse, representation:AnyObject)
+}
+
 extension Alamofire.Request {
+    
+    public func responseObject<T: ResponseObjectSerializable>(completionHandler: Response<T, NSError> -> Void) -> Self {
+        let responseSerializer = ResponseSerializer<T, NSError> { request, response, data, error in
+            let JSONResponseSerializer = Request.JSONResponseSerializer(options: .AllowFragments)
+            let result = JSONResponseSerializer.serializeResponse(request, response, data, error)
+            
+            switch result {
+            case .Success(let value):
+                if let response = response, responseObject = T(response: response, representation: value) {
+                    return .Success(responseObject)
+                } else {
+                    let failureReason = "无法将JSON解析为\(value)回应对象"
+                    let error = Error.errorWithCode(.JSONSerializationFailed, failureReason: failureReason)
+                    return .Failure(error)
+                }
+            case .Failure(let error):
+                return .Failure(error)
+            }
+        }
+        
+        return response(responseSerializer: responseSerializer, completionHandler: completionHandler)
+    }
+    
     class func imageResponseSerializer() -> ResponseSerializer<UIImage?, NSError> {
         return ResponseSerializer {
             request, response, data, error in
