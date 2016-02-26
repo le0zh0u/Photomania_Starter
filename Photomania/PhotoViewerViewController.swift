@@ -30,8 +30,7 @@ class PhotoViewerViewController: UIViewController, UIScrollViewDelegate, UIPopov
   }
     
     func loadPhoto(){
-         Alamofire.request(Five100px.Router.PhotoInfo(self.photoID, .Large)).validate().responseObject() {
-            (response: Response<PhotoInfo, NSError>) in
+         Alamofire.request(Five100px.Router.PhotoInfo(self.photoID, .Large)).validate().responseObject { (response: Response<PhotoInfo, NSError>) -> Void in
             guard response.result.error == nil else { return }
             let photoInfo = response.result.value
             self.photoInfo = photoInfo
