@@ -15,8 +15,8 @@ public protocol ResponseObjectSerializable{
 
 extension Alamofire.Request {
     
-    public func responseObject<T: ResponseObjectSerializable>(completionHandler: Response<T, NSError> -> Void) -> Self {
-        let responseSerializer = ResponseSerializer<T, NSError> { request, response, data, error in
+    public func responseObject<T: ResponseObjectSerializable>(completionHandler: Response<T?, NSError> -> Void) -> Self {
+        let responseSerializer = ResponseSerializer<T?, NSError> { request, response, data, error in
             let JSONResponseSerializer = Request.JSONResponseSerializer(options: .AllowFragments)
             let result = JSONResponseSerializer.serializeResponse(request, response, data, error)
             
